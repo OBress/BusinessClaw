@@ -19,15 +19,15 @@ await page.waitForFunction(() => {
 }, { timeout: 20000 });
 
 // Let Claw walk across the office, through the doorways, to Ledger in Finance.
-await page.waitForTimeout(12000);
+await page.waitForTimeout(13000);
 
 // Hero "in action" shot — zoom into the Finance conversation, Analytics panel.
 await page.click('.display-menu button[data-panel="analytics"]');
 await page.evaluate(() => {
   const o = window.Office;
-  o.cam.zoom = 1.95;
-  o.cam.x = 250;
-  o.cam.y = 560;
+  o.cam.zoom = 1.8;
+  o.cam.x = 230;
+  o.cam.y = 600;
   o.clampCam();
 });
 await page.waitForTimeout(600);
