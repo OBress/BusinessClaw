@@ -1,0 +1,7 @@
+businessclaw.example.com {
+    reverse_proxy 127.0.0.1:4177
+}
+
+# Keep OpenClaw Gateway loopback-only unless you intentionally expose it behind
+# strong auth, a private network, or a trusted proxy. The dashboard should be the
+# public surface; Discord is the command surface.

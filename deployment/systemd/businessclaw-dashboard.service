@@ -1,0 +1,16 @@
+[Unit]
+Description=BusinessClaw display-only dashboard
+After=network-online.target openclaw-gateway.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/ubuntu/businessclaw/dashboard
+EnvironmentFile=-/etc/businessclaw/businessclaw.env
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/env npm start
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>BusinessClaw Office</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=VT323&family=Press+Start+2P&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="stage-wrap" aria-label="BusinessClaw pixel office">
+        <div class="stage-frame">
+          <div class="floor-strip" role="group" aria-label="Office floors">
+            <button class="floor-pill active" type="button" data-floor="0">1F · Ops</button>
+            <button class="floor-pill" type="button" data-floor="1">2F · Research</button>
+            <button class="floor-pill" type="button" data-floor="2">B1 · Archive</button>
+          </div>
+
+          <div class="canvas-holder" id="canvas-holder">
+            <canvas id="stage" aria-label="Pixel office scene"></canvas>
+            <div class="zoom-controls" role="group" aria-label="Zoom controls">
+              <button type="button" id="zoom-in" title="Zoom in">+</button>
+              <button type="button" id="zoom-out" title="Zoom out">−</button>
+              <button type="button" id="zoom-fit" title="Fit floor">⤢</button>
+            </div>
+            <div class="scene-hint" id="scene-hint">Scroll to zoom · drag to pan · click an employee</div>
+            <div class="employee-popout" id="employee-popout" hidden></div>
+          </div>
+
+          <div class="board-mic" id="board-mic" aria-label="Board message indicator">
+            <span class="mic-head"></span>
+            <span class="mic-stand"></span>
+            <span class="mic-note" id="mic-note">quiet</span>
+          </div>
+        </div>
+      </section>
+
+      <aside class="panel" aria-label="BusinessClaw display panels">
+        <header>
+          <p class="kicker">BUSINESSCLAW</p>
+          <h1>Company Office</h1>
+          <p id="timestamp">Starting display…</p>
+        </header>
+
+        <nav class="display-menu" aria-label="Display sections">
+          <button class="active" type="button" data-panel="office">Office</button>
+          <button type="button" data-panel="analytics">Analytics</button>
+          <button type="button" data-panel="bank">Bank</button>
+          <button type="button" data-panel="tasks">Tasks</button>
+          <button type="button" data-panel="queue">Queue</button>
+          <button type="button" data-panel="experiments">Experiments</button>
+          <button type="button" data-panel="cabinet">Cabinet</button>
+        </nav>
+
+        <section class="metric-grid">
+          <article>
+            <small>Gateway</small>
+            <strong id="gateway-status">unknown</strong>
+          </article>
+          <article>
+            <small>Employees</small>
+            <strong id="agent-count">0</strong>
+          </article>
+          <article>
+            <small>Queue</small>
+            <strong id="queue-count">0</strong>
+          </article>
+          <article>
+            <small>Bank Level</small>
+            <strong id="bank-level">$0.00</strong>
+          </article>
+        </section>
+
+        <section class="display-card">
+          <h2 id="rotating-title">Current Work</h2>
+          <div id="rotating-body" class="feed"></div>
+        </section>
+
+        <footer class="panel-foot">
+          <span class="dot" id="live-dot"></span>
+          <span id="live-label">display-only · no controls</span>
+        </footer>
+      </aside>
+    </main>
+
+    <script src="/office.js"></script>
+    <script src="/app.js"></script>
+  </body>
+</html>

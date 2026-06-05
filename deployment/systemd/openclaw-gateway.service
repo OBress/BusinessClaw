@@ -1,0 +1,15 @@
+[Unit]
+Description=OpenClaw Gateway for BusinessClaw
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+EnvironmentFile=-/etc/businessclaw/businessclaw.env
+WorkingDirectory=/home/ubuntu/businessclaw
+ExecStart=/usr/bin/env openclaw gateway run --port 18789
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

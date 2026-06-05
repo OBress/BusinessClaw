@@ -1,0 +1,61 @@
+{
+  // Example OpenClaw patch for BusinessClaw.
+  // Apply after reviewing paths:
+  // openclaw config patch --file config/openclaw.businessclaw.patch.example.json5
+  //
+  // Do not paste real tokens here. Keep Discord token in DISCORD_BOT_TOKEN.
+  agents: {
+    defaults: {
+      workspace: "C:\\Users\\owen\\Desktop\\Projects\\Random\\BusinessClaw\\openclaw-runtime\\workspace",
+    },
+    list: [
+      { id: "main" },
+      {
+        id: "claw",
+        name: "claw",
+        workspace: "C:\\Users\\owen\\Desktop\\Projects\\Random\\BusinessClaw\\openclaw-runtime\\agents\\claw\\workspace",
+        agentDir: "C:\\Users\\owen\\Desktop\\Projects\\Random\\BusinessClaw\\openclaw-runtime\\agents\\claw\\agent",
+        identity: { name: "Claw", emoji: "brain", theme: "executive" },
+      },
+      {
+        id: "ledger",
+        name: "ledger",
+        workspace: "C:\\Users\\owen\\Desktop\\Projects\\Random\\BusinessClaw\\openclaw-runtime\\agents\\ledger\\workspace",
+        agentDir: "C:\\Users\\owen\\Desktop\\Projects\\Random\\BusinessClaw\\openclaw-runtime\\agents\\ledger\\agent",
+        identity: { name: "Ledger", emoji: "briefcase", theme: "finance" },
+      },
+      {
+        id: "forge",
+        name: "forge",
+        workspace: "C:\\Users\\owen\\Desktop\\Projects\\Random\\BusinessClaw\\openclaw-runtime\\agents\\forge\\workspace",
+        agentDir: "C:\\Users\\owen\\Desktop\\Projects\\Random\\BusinessClaw\\openclaw-runtime\\agents\\forge\\agent",
+        identity: { name: "Forge", emoji: "hammer", theme: "builder" },
+      },
+    ],
+  },
+  channels: {
+    discord: {
+      name: "BusinessClaw Discord",
+      enabled: false,
+      accounts: {
+        default: {
+          token: {
+            source: "env",
+            provider: "default",
+            id: "DISCORD_BOT_TOKEN",
+          },
+          // Optional literal string if Discord app lookup fails:
+          // applicationId: "123456789012345678",
+          allowBots: "mentions",
+          botLoopProtection: {
+            enabled: true,
+            maxEventsPerWindow: 12,
+            windowSeconds: 60,
+            cooldownSeconds: 120,
+          },
+        },
+      },
+    },
+  },
+}
+

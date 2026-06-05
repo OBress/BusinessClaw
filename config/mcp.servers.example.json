@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "example-local-server": {
+      "command": "python",
+      "args": ["-m", "example_mcp_server"],
+      "env": {}
+    }
+  }
+}
+

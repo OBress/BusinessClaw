@@ -1,0 +1,24 @@
+[project]
+name = "businessclaw"
+version = "0.1.0"
+description = "Local-first autonomous AI business runtime."
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115.0",
+    "httpx>=0.27.0",
+    "pydantic>=2.8.0",
+    "pydantic-settings>=2.4.0",
+    "uvicorn[standard]>=0.30.0",
+]
+
+[project.optional-dependencies]
+discord = ["discord.py>=2.4.0"]
+wallet = ["web3>=6.20.0"]
+dev = ["pytest>=8.3.0", "ruff>=0.6.0"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.setuptools.packages.find]
+include = ["businessclaw*"]

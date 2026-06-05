@@ -1,0 +1,18 @@
+[Unit]
+Description=BusinessClaw durable message/LLM queue worker
+After=network-online.target openclaw-gateway.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/ubuntu/businessclaw
+EnvironmentFile=-/etc/businessclaw/businessclaw.env
+Environment=NODE_ENV=production
+# Drains the queue continuously, pacing delivery and retrying with backoff.
+# Wire BUSINESSCLAW_QUEUE_DELIVER_CMD in the env file to the real outbound action.
+ExecStart=/usr/bin/env node openclaw-runtime/workspace/skills/businessclaw-queue/bin/businessclaw-queue.mjs serve --loop --interval 2000
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,16 @@
+{
+  "name": "example_manifest_tool",
+  "description": "Example manifest-only tool placeholder for future dynamic tool adapters.",
+  "risk_level": "low",
+  "can_create_external_effects": false,
+  "requires_owner_approval": false,
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "message": {
+        "type": "string"
+      }
+    }
+  }
+}
+

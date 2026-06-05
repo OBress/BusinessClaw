@@ -1,0 +1,11 @@
+.env
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+data/
+node_modules/
+dashboard/node_modules/
+openclaw-runtime/**/agent/
+openclaw-runtime/**/.openclaw/
