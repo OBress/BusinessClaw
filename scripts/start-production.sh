@@ -3,10 +3,10 @@ set -e
 
 # ── Model provider ─────────────────────────────────────────────────────────────
 # OPENROUTER_API_KEY is read from the environment by OpenClaw automatically.
-# Pass the full provider/model slug (e.g. openrouter/owl-alpha) so OpenClaw
-# selects the correct provider plugin.
+# Write the model directly to config — openclaw models set mangles the slug
+# (strips prefix → wrong provider; keeps prefix → openrouter/openrouter/...).
 if [ -n "$LLM_MODEL" ]; then
-  openclaw models set "$LLM_MODEL" || true
+  openclaw config set agents.defaults.model.primary "\"$LLM_MODEL\"" || true
 fi
 
 # ── Plugins ────────────────────────────────────────────────────────────────────
