@@ -25,6 +25,12 @@ if [ -n "$DISCORD_APPLICATION_ID" ]; then
   openclaw config set channels.discord.accounts.default.applicationId "\"$DISCORD_APPLICATION_ID\"" || true
 fi
 
+# Register the owner's Discord user ID as an operator so they can use
+# slash commands and interact with the gateway.
+if [ -n "$DISCORD_OWNER_ID" ]; then
+  openclaw config set channels.discord.accounts.default.operatorDiscordIds "[\"$DISCORD_OWNER_ID\"]" --strict-json || true
+fi
+
 # ── OpenClaw gateway ───────────────────────────────────────────────────────────
 # No systemd in Docker — run the gateway as a plain foreground process.
 openclaw gateway &
