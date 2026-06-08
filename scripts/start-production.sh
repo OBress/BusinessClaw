@@ -59,13 +59,21 @@ openclaw gateway &
 
 sleep 5
 
+# ── Memory search ─────────────────────────────────────────────────────────────
+# Disable vector memory search — no OpenAI key available, and the builtin
+# backend hardcodes OpenAI as the embedding provider.
+openclaw config set agents.defaults.memorySearch.enabled false --strict-json || true
+
 # ── Autonomous work cycle ──────────────────────────────────────────────────────
 # Add a cron job so Claw works proactively without waiting for Discord messages.
-# The flag file prevents duplicate jobs on every redeployment.
-if [ ! -f /app/data/.cron-initialized ]; then
-  openclaw cron add --agent claw --every 1h --description "work-cycle" \
-    "Execute your standing orders: check active tasks and owner messages, advance the highest-value task, and report what changed." || true
-  touch /app/data/.cron-initialized
+# v2 flag: v1 was created even though cron add failed (wrong syntax), so use a
+# new name so this block actually runs on the next deploy.
+# The && ensures the flag is only written on success — retries on future deploys
+# if the gateway isn't up yet.
+if [ ! -f /app/data/.cron-v2-initialized ]; then
+  openclaw cron add work-cycle --every 1h --agent claw \
+    --message "Execute your standing orders: check active tasks and owner messages, advance the highest-value task, and report what changed." && \
+  touch /app/data/.cron-v2-initialized || true
 fi
 
 # ── Dashboard ──────────────────────────────────────────────────────────────────
