@@ -9,10 +9,6 @@ if [ -n "$LLM_MODEL" ]; then
   openclaw config set agents.defaults.model.primary "\"$LLM_MODEL\"" || true
 fi
 
-# ── Plugins ────────────────────────────────────────────────────────────────────
-# Whitelist the discord plugin explicitly to suppress the security warning.
-openclaw config set plugins.allow '["@openclaw/discord"]' --strict-json || true
-
 # ── Discord ────────────────────────────────────────────────────────────────────
 if [ -n "$DISCORD_BOT_TOKEN" ]; then
   openclaw config set channels.discord.enabled true --strict-json || true
