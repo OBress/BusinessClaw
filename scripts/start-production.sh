@@ -79,7 +79,8 @@ openclaw config set gateway.auth.mode '"none"' --strict-json || true
 openclaw config set tools.profile '"full"' --strict-json || true
 
 # ── Web search ─────────────────────────────────────────────────────────────────
-# Point to a public SearXNG instance — no API key needed.
+# SearXNG plugin is bundled but disabled by default — enable it, then set URL.
+openclaw config set plugins.entries.searxng.enabled true --strict-json || true
 openclaw config set plugins.entries.searxng.config.webSearch.baseUrl '"https://searx.be"' --strict-json || true
 
 # ── OpenClaw gateway ───────────────────────────────────────────────────────────
