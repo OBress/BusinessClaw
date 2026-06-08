@@ -78,6 +78,10 @@ openclaw config set gateway.auth.mode '"none"' --strict-json || true
 # Default "coding" profile strips multi-agent tools she needs to hire/delegate.
 openclaw config set tools.profile '"full"' --strict-json || true
 
+# ── Web search ─────────────────────────────────────────────────────────────────
+# Point to a public SearXNG instance — no API key needed.
+openclaw config set plugins.entries.searxng.config.webSearch.baseUrl '"https://searx.be"' --strict-json || true
+
 # ── OpenClaw gateway ───────────────────────────────────────────────────────────
 # No systemd in Docker — run the gateway as a plain foreground process.
 openclaw gateway &
