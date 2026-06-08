@@ -25,10 +25,10 @@ if [ -n "$DISCORD_APPLICATION_ID" ]; then
   openclaw config set channels.discord.accounts.default.applicationId "\"$DISCORD_APPLICATION_ID\"" || true
 fi
 
-# Register the owner's Discord user ID as an operator so they can use
-# slash commands and interact with the gateway.
+# Register the owner's Discord user ID in the owner allowlist so they can use
+# owner-scoped slash commands (/goal, /plan, etc.).
 if [ -n "$DISCORD_OWNER_ID" ]; then
-  openclaw config set channels.discord.accounts.default.operatorDiscordIds "[\"$DISCORD_OWNER_ID\"]" --strict-json || true
+  openclaw config set commands.ownerAllowFrom "[\"$DISCORD_OWNER_ID\"]" --strict-json || true
 fi
 
 # ── OpenClaw gateway ───────────────────────────────────────────────────────────
