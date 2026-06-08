@@ -7,7 +7,8 @@ import { fileURLToPath } from "node:url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, "..");
 const publicDir = path.join(__dirname, "public");
-const port = Number(process.env.BUSINESSCLAW_DASHBOARD_PORT || 4177);
+const host = process.env.HOST || "127.0.0.1";
+const port = Number(process.env.PORT || process.env.BUSINESSCLAW_DASHBOARD_PORT || 4177);
 const ledgerPath = process.env.BUSINESSCLAW_LEDGER_PATH || path.join(root, "data", "businessclaw-ledger.json");
 const orgPath = process.env.BUSINESSCLAW_ORG_PATH || path.join(root, "data", "businessclaw-org.json");
 const revenuePath = process.env.BUSINESSCLAW_REVENUE_PATH || path.join(root, "data", "businessclaw-revenue.json");
@@ -522,8 +523,8 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-server.listen(port, "127.0.0.1", () => {
-  console.log(`BusinessClaw display dashboard: http://127.0.0.1:${port}`);
+server.listen(port, host, () => {
+  console.log(`BusinessClaw display dashboard: http://${host}:${port}`);
   log(`listening on ${port}`).catch(() => {});
   // Warm the OpenClaw cache immediately, then refresh on an interval. Never
   // awaited by request handling, so a slow gateway never stalls the page.

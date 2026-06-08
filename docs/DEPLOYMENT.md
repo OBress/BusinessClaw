@@ -1,5 +1,67 @@
 # Deployment
 
+## Railway (Quick-Start Free Tier)
+
+Railway is the fastest path to a live deployment. Everything needed is already
+in the repo: `Dockerfile`, `railway.toml`, and `scripts/start-production.sh`.
+
+### Steps
+
+1. **Push to GitHub** — Railway deploys from a GitHub repo.
+   ```powershell
+   git add Dockerfile railway.toml scripts/start-production.sh config/production.env.example dashboard/server.mjs
+   git commit -m "Add Railway deployment"
+   git push
+   ```
+
+2. **Create a Railway project** — go to railway.app, click **New Project →
+   Deploy from GitHub repo**, and select this repo. Railway detects the
+   `Dockerfile` automatically.
+
+3. **Set environment variables** — in your Railway service, open the
+   **Variables** tab and add the keys from `config/production.env.example`.
+   The minimum set to get the dashboard running:
+   - `OPENROUTER_API_KEY` — your OpenRouter API key
+   - `LLM_MODEL` — `openrouter/owl-alpha`
+   - `DISCORD_BOT_TOKEN` — after you create the bot (see `docs/DISCORD_SETUP.md`)
+   - `DISCORD_APPLICATION_ID`
+   - `DISCORD_OWNER_USER_ID` — your Discord user ID
+   - `DISCORD_GUILD_ID` — your Discord server ID
+   Do **not** set `PORT` — Railway injects it automatically.
+
+4. **Generate a domain** — in the service's **Settings → Networking** panel,
+   click **Generate Domain** to get a `*.up.railway.app` URL. Test it first
+   before pointing your custom domain.
+
+5. **Connect `kontext.observer`** — in the same Networking panel, click
+   **Custom Domain** and enter `dashboard.kontext.observer` (or bare
+   `kontext.observer` if you want the root). Railway gives you a CNAME target.
+   In your Cloudflare dashboard:
+   - DNS → Add record → Type **CNAME**
+   - Name: `dashboard` (or `@` for root)
+   - Target: the value Railway showed (e.g. `businessclaw-production.up.railway.app`)
+   - Proxy status: **Proxied** (orange cloud) — this routes traffic through
+     Cloudflare's CDN and enables HTTPS automatically.
+
+6. **Verify** — open `https://dashboard.kontext.observer`, the pixel-office
+   dashboard should load. The OpenClaw status sections will show "warming up"
+   for a few seconds on cold start.
+
+### Persistent data
+
+Railway's free tier does **not** provide persistent disk by default. The data
+files (`data/*.json`) are written inside the container and will reset on
+redeploy. To persist them:
+
+- Add a Railway **Volume** mounted at `/app/data` (available on paid plans).
+- Or sync data files to an external store (S3, Supabase, etc.) via a cron skill.
+
+For early-stage use where the agents are still being configured, losing data on
+redeploy is acceptable. Add persistence before the agents start handling real
+money or important decisions.
+
+---
+
 ## Recommended Production Shape
 
 Run the project as Docker Compose on one small server:

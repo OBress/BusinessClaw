@@ -29,15 +29,28 @@ openclaw models status
 openclaw gateway restart
 ```
 
-## Option 2: OpenRouter
+## Option 2: OpenRouter (configured for BusinessClaw)
 
-OpenClaw includes an OpenRouter provider. Configure it through:
+BusinessClaw is pre-configured to use `openrouter/owl-alpha`. Set your key and
+activate it with:
+
+```powershell
+$env:OPENROUTER_API_KEY="sk-or-..."
+openclaw models auth set-key --provider openrouter $env:OPENROUTER_API_KEY
+openclaw models set openrouter/owl-alpha
+openclaw gateway restart
+openclaw models status
+```
+
+Or use the interactive wizard:
 
 ```powershell
 openclaw configure
 ```
 
-or use the relevant `openclaw models` command once you choose the provider/model.
+For production on Railway, set `OPENROUTER_API_KEY` and `LLM_MODEL` as
+environment variables — `scripts/start-production.sh` runs the `set-key` and
+`models set` commands automatically on startup.
 
 ## Option 3: Local Model
 
