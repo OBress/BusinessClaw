@@ -524,9 +524,66 @@ body {
 @media (max-width: 980px) {
   .shell {
     grid-template-columns: 1fr;
-    grid-template-rows: auto 1fr;
+    grid-template-rows: auto auto;
     height: auto;
-    overflow: auto;
+    overflow: visible;
+    padding: 10px;
   }
-  body { overflow: auto; }
+  body {
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+  /* canvas-holder uses flex:1 which collapses without an explicit parent height */
+  .canvas-holder {
+    height: 340px;
+    flex: none;
+  }
+  .stage-frame {
+    height: auto;
+  }
+  /* let the panel expand to its natural height and be part of the page scroll */
+  .panel {
+    overflow: visible;
+  }
+  /* feed card needs a fixed scroll zone rather than flex-fill */
+  .display-card {
+    flex: none;
+    height: 300px;
+  }
+}
+
+/* small phones */
+@media (max-width: 540px) {
+  .shell {
+    padding: 8px;
+    gap: 10px;
+  }
+  .canvas-holder {
+    height: 260px;
+  }
+  .floor-strip {
+    gap: 6px;
+  }
+  .floor-pill {
+    font-size: 15px;
+    padding: 3px 10px;
+  }
+  .panel {
+    padding: 12px;
+    gap: 8px;
+  }
+  .panel header h1 {
+    font-size: 13px;
+  }
+  .display-menu button {
+    font-size: 16px;
+    padding: 5px 10px;
+    min-height: 36px;
+  }
+  .metric-grid strong {
+    font-size: 22px;
+  }
+  .scene-hint {
+    font-size: 14px;
+  }
 }
