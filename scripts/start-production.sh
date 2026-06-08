@@ -76,7 +76,9 @@ openclaw config set gateway.auth.mode '"none"' --strict-json || true
 # ── Tool profile ───────────────────────────────────────────────────────────────
 # "full" gives Claw every tool: agents_list, message, gateway, nodes, tts, etc.
 # Default "coding" profile strips multi-agent tools she needs to hire/delegate.
-openclaw config set tools.profile '"messaging"' --strict-json || true
+openclaw config set tools.profile '"full"' --strict-json || true
+# Deny tools that have no infrastructure on Railway and would hang mid-turn.
+openclaw config set tools.deny '["nodes","gateway"]' --strict-json || true
 
 # ── Web search ─────────────────────────────────────────────────────────────────
 # SearXNG plugin is bundled but disabled by default — enable it, then set URL.
