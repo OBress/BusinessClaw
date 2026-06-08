@@ -272,13 +272,17 @@ function fillPopout(id) {
   el.querySelector(".pop-close").addEventListener("click", hidePopout);
 }
 
+const isMobile = () => window.matchMedia("(max-width: 768px)").matches;
+
 function showPopout(id, pos) {
   popoutId = id;
   fillPopout(id);
   const el = $("employee-popout");
   el.hidden = false;
-  positionPopout(pos);
-  $("scene-hint").textContent = `Viewing ${agentLabels[id] || id} — click elsewhere to close`;
+  if (!isMobile()) {
+    positionPopout(pos);
+    $("scene-hint").textContent = `Viewing ${agentLabels[id] || id} — click elsewhere to close`;
+  }
 }
 
 function positionPopout(pos) {
@@ -385,6 +389,13 @@ function installInteractions() {
   // Canvas employee clicks → pop-out profile; clicking elsewhere closes it.
   window.Office.onAgentClick((id, pos) => showPopout(id, pos));
   window.Office.onEmptyClick(() => hidePopout());
+
+  // Mobile dashboard toggle.
+  const dashBtn = $("mobile-dash-btn");
+  const closeBtn = $("mobile-close-btn");
+  const panelEl = document.querySelector(".panel");
+  if (dashBtn) dashBtn.addEventListener("click", () => { panelEl.classList.add("mobile-open"); autoRotate = false; });
+  if (closeBtn) closeBtn.addEventListener("click", () => panelEl.classList.remove("mobile-open"));
 }
 
 // Auto-tour panels when idle.

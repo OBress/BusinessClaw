@@ -521,69 +521,173 @@ body {
   50% { opacity: 0.4; }
 }
 
-@media (max-width: 980px) {
-  .shell {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto;
-    height: auto;
-    overflow: visible;
-    padding: 10px;
-  }
-  body {
-    overflow-y: auto;
-    overflow-x: hidden;
-  }
-  /* canvas-holder uses flex:1 which collapses without an explicit parent height */
-  .canvas-holder {
-    height: 340px;
-    flex: none;
-  }
-  .stage-frame {
-    height: auto;
-  }
-  /* let the panel expand to its natural height and be part of the page scroll */
-  .panel {
-    overflow: visible;
-  }
-  /* feed card needs a fixed scroll zone rather than flex-fill */
-  .display-card {
-    flex: none;
-    height: 300px;
-  }
+/* Desktop: hide mobile-only controls */
+.mobile-dash-btn,
+.mobile-close-btn {
+  display: none;
 }
 
-/* small phones */
-@media (max-width: 540px) {
+/* ── Mobile: full-screen game with overlay panels ────────────────────── */
+@media (max-width: 768px) {
+  body {
+    overflow: hidden;
+  }
+
   .shell {
-    padding: 8px;
-    gap: 10px;
+    display: block;
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    padding: 0;
+    gap: 0;
   }
+
+  /* Stage fills the whole viewport */
+  .stage-wrap {
+    position: absolute;
+    inset: 0;
+  }
+
+  .stage-frame {
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border-radius: 0;
+    border: none;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  /* Canvas fills the frame */
   .canvas-holder {
-    height: 260px;
+    position: absolute;
+    inset: 0;
+    height: 100%;
+    width: 100%;
+    border: none;
+    border-radius: 0;
+    flex: none;
   }
+
+  /* Floor pills float top-left over the canvas */
   .floor-strip {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 15;
+    margin: 0;
     gap: 6px;
   }
+
   .floor-pill {
-    font-size: 15px;
-    padding: 3px 10px;
+    font-size: 14px;
+    padding: 4px 10px;
+    background: rgba(44, 30, 16, 0.88);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
   }
-  .panel {
-    padding: 12px;
-    gap: 8px;
+
+  /* Zoom controls stay top-right, shifted down clear of floor pills */
+  .zoom-controls {
+    top: 56px;
   }
-  .panel header h1 {
-    font-size: 13px;
-  }
-  .display-menu button {
-    font-size: 16px;
-    padding: 5px 10px;
-    min-height: 36px;
-  }
-  .metric-grid strong {
-    font-size: 22px;
-  }
+
   .scene-hint {
     font-size: 14px;
+    bottom: 6px;
+    left: 6px;
+  }
+
+  /* Board mic shifts up to clear the dashboard button */
+  .board-mic {
+    bottom: 74px;
+    right: 16px;
+  }
+
+  /* Dashboard open button — bottom right */
+  .mobile-dash-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    position: absolute;
+    bottom: 20px;
+    right: 14px;
+    z-index: 15;
+    font-family: var(--retro);
+    font-size: 19px;
+    padding: 8px 18px;
+    color: #f3e6c6;
+    background: rgba(44, 30, 16, 0.88);
+    border: 2px solid var(--accent);
+    border-radius: 10px;
+    cursor: pointer;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+  }
+
+  /* Panel: full-screen slide-up overlay */
+  .panel {
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
+    padding: 14px 16px;
+    gap: 10px;
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+
+  .panel.mobile-open {
+    transform: translateY(0);
+  }
+
+  /* Back button — top of the overlay panel */
+  .mobile-close-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--retro);
+    font-size: 18px;
+    padding: 7px 16px;
+    color: var(--ink);
+    background: #e7cf9c;
+    border: 2px solid var(--wood);
+    border-radius: 8px;
+    cursor: pointer;
+    align-self: flex-start;
+    flex-shrink: 0;
+  }
+
+  /* Feed card: fixed scroll zone inside the panel */
+  .display-card {
+    flex: none;
+    height: 260px;
+  }
+
+  /* Employee card: bottom sheet instead of floating popout */
+  .employee-popout {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: auto;
+    width: 100%;
+    max-width: 100%;
+    border-radius: 16px 16px 0 0;
+    z-index: 25;
+    padding: 20px 20px 36px;
+    box-shadow: 0 -8px 36px rgba(0, 0, 0, 0.5);
+  }
+
+  /* Hide the downward tail arrow — doesn't make sense for a bottom sheet */
+  .employee-popout::after {
+    display: none;
   }
 }

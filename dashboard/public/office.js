@@ -798,17 +798,53 @@ const Office = {
 
   _bindInput() {
     const cv = this.canvas;
+
+    // Mouse
     cv.addEventListener("wheel", (e) => { e.preventDefault(); const r = cv.getBoundingClientRect(); this.zoomBy(e.deltaY < 0 ? 1.12 : 1 / 1.12, e.clientX - r.left, e.clientY - r.top); }, { passive: false });
     cv.addEventListener("mousedown", (e) => { const r = cv.getBoundingClientRect(); this.drag = { x: e.clientX, y: e.clientY, camX: this.cam.x, camY: this.cam.y, moved: false, sx: e.clientX - r.left, sy: e.clientY - r.top }; });
     window.addEventListener("mousemove", (e) => {
-      if (!this.drag) return;
+      if (!this.drag || this._touch) return;
       const ddx = e.clientX - this.drag.x, ddy = e.clientY - this.drag.y;
       if (Math.abs(ddx) + Math.abs(ddy) > 3) this.drag.moved = true;
       this.cam.x = this.drag.camX - ddx / this.cam.zoom; this.cam.y = this.drag.camY - ddy / this.cam.zoom; this.clampCam();
       cv.style.cursor = "grabbing";
     });
-    window.addEventListener("mouseup", () => { if (!this.drag) return; cv.style.cursor = "grab"; if (!this.drag.moved) this._click(this.drag.sx, this.drag.sy); this.drag = null; });
+    window.addEventListener("mouseup", () => { if (!this.drag || this._touch) return; cv.style.cursor = "grab"; if (!this.drag.moved) this._click(this.drag.sx, this.drag.sy); this.drag = null; });
     cv.style.cursor = "grab";
+
+    // Touch: pan + tap-to-click + pinch-zoom
+    let pinchDist = 0;
+    cv.addEventListener("touchstart", (e) => {
+      this._touch = true;
+      if (e.touches.length === 1) {
+        const t = e.touches[0], r = cv.getBoundingClientRect();
+        this.drag = { x: t.clientX, y: t.clientY, camX: this.cam.x, camY: this.cam.y, moved: false, sx: t.clientX - r.left, sy: t.clientY - r.top };
+        pinchDist = 0;
+      } else if (e.touches.length === 2) {
+        pinchDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+      }
+    }, { passive: true });
+    cv.addEventListener("touchmove", (e) => {
+      if (e.touches.length === 2) {
+        const d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+        if (pinchDist > 0) {
+          const mx = (e.touches[0].clientX + e.touches[1].clientX) / 2, my = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+          const r = cv.getBoundingClientRect();
+          this.zoomBy(d / pinchDist, mx - r.left, my - r.top);
+        }
+        pinchDist = d;
+      } else if (e.touches.length === 1 && this.drag) {
+        const t = e.touches[0];
+        const ddx = t.clientX - this.drag.x, ddy = t.clientY - this.drag.y;
+        if (Math.abs(ddx) + Math.abs(ddy) > 6) this.drag.moved = true;
+        this.cam.x = this.drag.camX - ddx / this.cam.zoom; this.cam.y = this.drag.camY - ddy / this.cam.zoom; this.clampCam();
+      }
+    }, { passive: true });
+    cv.addEventListener("touchend", () => {
+      if (!this.drag) return;
+      if (!this.drag.moved) this._click(this.drag.sx, this.drag.sy);
+      this.drag = null; this._touch = false; pinchDist = 0;
+    }, { passive: true });
   },
 
   _click(sx, sy) {
