@@ -68,6 +68,11 @@ fi
 # No OpenAI key available; builtin backend hardcodes OpenAI as embedding provider.
 openclaw config set agents.defaults.memorySearch.enabled false --strict-json || true
 
+# ── Gateway auth ───────────────────────────────────────────────────────────────
+# Disable gateway auth — Railway's network layer is the perimeter.
+# Without this, dashboard CLI polls fail with "missing scope: operator.read".
+openclaw config set gateway.auth.mode '"none"' --strict-json || true
+
 # ── OpenClaw gateway ───────────────────────────────────────────────────────────
 # No systemd in Docker — run the gateway as a plain foreground process.
 openclaw gateway &
