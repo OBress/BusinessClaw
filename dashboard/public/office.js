@@ -11,6 +11,22 @@
 
 const CELL = 16; // pathfinding grid cell size (world px)
 
+// Which room each founding agent defaults to when working
+const ROLE_HOME_ROOM = {
+  claw: "Ops Bullpen",
+  ledger: "Finance",
+  forge: "Forge Workshop",
+};
+
+// Task keywords → room to route to (checked in order; first match wins)
+const TASK_ROOM_KEYWORDS = {
+  Boardroom: ["meeting", "standup", "board", "planning", "review", "strategy", "discuss", "agenda", "present", "sync", "call"],
+  Finance: ["finance", "ledger", "wallet", "payment", "revenue", "money", "budget", "accounting", "spend", "earn", "invoice"],
+  "Forge Workshop": ["forge", "build", "tool", "automation", "code", "develop", "implement", "script", "ship", "create", "feature"],
+  "Server Closet": ["server", "deploy", "runtime", "infra", "database", "config", "logs", "debug", "pipeline"],
+  "Break Room": ["break", "coffee", "lunch", "food"],
+};
+
 const AGENT_STYLE = {
   claw: { shirt: "#3f6fb0", shirtDark: "#2d5288", hair: "#3a2a1c", skin: "#f0c79a", name: "Claw" },
   ledger: { shirt: "#3f9d6b", shirtDark: "#2d7350", hair: "#241a12", skin: "#e8b98a", name: "Ledger" },
@@ -47,15 +63,25 @@ function opsScene() {
     hallway: { x: 24, y: hallY, w: 1472, h: hallH },
     hallCenterY: hallY + hallH / 2,
     rooms: [
-      { x: 24, y: 56, w: 380, h: 300, label: "Boardroom", floor: "#cdb98a", rug: "#9c6f43", accent: "#7a9c64", door: { side: "bottom", at: 214, w: 60 } },
-      { x: 424, y: 56, w: 520, h: 300, label: "Ops Bullpen", floor: "#d8c79a", rug: "#b89a64", accent: "#c8a44a", door: { side: "bottom", at: 684, w: 64 } },
-      { x: 964, y: 56, w: 260, h: 300, label: "Gym", floor: "#bcc6cd", rug: "#8fa2ad", accent: "#5fae8a", door: { side: "bottom", at: 1094, w: 56 } },
-      { x: 1244, y: 56, w: 252, h: 300, label: "Lounge", floor: "#cdbfa0", rug: "#9c7a52", accent: "#b06a52", door: { side: "bottom", at: 1370, w: 56 } },
-      { x: 24, y: 448, w: 300, h: 320, label: "Finance", floor: "#b8cdd6", rug: "#7fa0ad", accent: "#5f8fbf", door: { side: "top", at: 174, w: 56 } },
-      { x: 344, y: 448, w: 340, h: 320, label: "Forge Workshop", floor: "#d8b6a6", rug: "#a8705a", accent: "#c25a44", door: { side: "top", at: 514, w: 60 } },
-      { x: 704, y: 448, w: 300, h: 320, label: "Break Room", floor: "#cdd3bf", rug: "#9aa884", accent: "#7a9c64", door: { side: "top", at: 854, w: 56 } },
-      { x: 1024, y: 448, w: 260, h: 320, label: "Sleeping Quarters", floor: "#c4b6cd", rug: "#9a86b0", accent: "#8a6fc0", door: { side: "top", at: 1154, w: 56 } },
-      { x: 1304, y: 448, w: 192, h: 320, label: "Server Closet", floor: "#aab0bf", rug: "#888fa0", accent: "#5fae8a", door: { side: "top", at: 1400, w: 52 } },
+      { x: 24, y: 56, w: 380, h: 300, label: "Boardroom", floor: "#cdb98a", rug: "#9c6f43", accent: "#7a9c64", door: { side: "bottom", at: 214, w: 60 },
+        standSpot: { x: 214, y: 295 },
+        meetingSpots: [{ x: 96, y: 240 }, { x: 276, y: 240 }, { x: 186, y: 240 }, { x: 186, y: 115 }] },
+      { x: 424, y: 56, w: 520, h: 300, label: "Ops Bullpen", floor: "#d8c79a", rug: "#b89a64", accent: "#c8a44a", door: { side: "bottom", at: 684, w: 64 },
+        standSpot: { x: 684, y: 290 } },
+      { x: 964, y: 56, w: 260, h: 300, label: "Gym", floor: "#bcc6cd", rug: "#8fa2ad", accent: "#5fae8a", door: { side: "bottom", at: 1094, w: 56 },
+        standSpot: { x: 1040, y: 210 } },
+      { x: 1244, y: 56, w: 252, h: 300, label: "Lounge", floor: "#cdbfa0", rug: "#9c7a52", accent: "#b06a52", door: { side: "bottom", at: 1370, w: 56 },
+        standSpot: { x: 1370, y: 200 } },
+      { x: 24, y: 448, w: 300, h: 320, label: "Finance", floor: "#b8cdd6", rug: "#7fa0ad", accent: "#5f8fbf", door: { side: "top", at: 174, w: 56 },
+        standSpot: { x: 174, y: 520 } },
+      { x: 344, y: 448, w: 340, h: 320, label: "Forge Workshop", floor: "#d8b6a6", rug: "#a8705a", accent: "#c25a44", door: { side: "top", at: 514, w: 60 },
+        standSpot: { x: 480, y: 530 } },
+      { x: 704, y: 448, w: 300, h: 320, label: "Break Room", floor: "#cdd3bf", rug: "#9aa884", accent: "#7a9c64", door: { side: "top", at: 854, w: 56 },
+        standSpot: { x: 820, y: 530 } },
+      { x: 1024, y: 448, w: 260, h: 320, label: "Sleeping Quarters", floor: "#c4b6cd", rug: "#9a86b0", accent: "#8a6fc0", door: { side: "top", at: 1154, w: 56 },
+        standSpot: { x: 1100, y: 530 } },
+      { x: 1304, y: 448, w: 192, h: 320, label: "Server Closet", floor: "#aab0bf", rug: "#888fa0", accent: "#5fae8a", door: { side: "top", at: 1400, w: 52 },
+        standSpot: { x: 1370, y: 530 } },
     ],
     props: [
       // Boardroom
@@ -662,23 +688,65 @@ const Office = {
     let active = (state.org && state.org.employees ? state.org.employees : []).filter((e) => e.status === "active");
     if (!active.length) active = [{ id: "claw", name: "Claw" }, { id: "ledger", name: "Ledger" }, { id: "forge", name: "Forge" }];
     this.syncEmployees(active);
-    // Conversation roles.
-    for (const id of this.order) { this.agents[id].role = "home"; this.agents[id].partner = null; }
+
+    // Reset roles.
+    for (const id of this.order) { this.agents[id].role = "home"; this.agents[id].partner = null; this.agents[id].meetingSpot = null; }
+
+    // Compute target room from active tasks.
+    const rawTasks = state.tasks;
+    const taskList = Array.isArray(rawTasks) ? rawTasks
+      : Array.isArray(rawTasks?.tasks) ? rawTasks.tasks
+      : Array.isArray(rawTasks?.data?.tasks) ? rawTasks.data.tasks : [];
+    const taskByAgent = {};
+    for (const task of taskList) {
+      const agentId = task.agentId || task.agent_id || task.assignedTo || task.assigned_to || task.assignee;
+      const isActive = ["active", "in_progress", "running", "open"].includes(task.status);
+      if (agentId && isActive && !taskByAgent[agentId]) taskByAgent[agentId] = task;
+    }
+    for (const id of this.order) {
+      const task = taskByAgent[id];
+      this.agents[id].targetRoom = task ? this._roomFromTask(id, task) : null;
+    }
+
+    // Meeting: two agents in conversation → both walk to Boardroom meeting spots.
+    const scene = SCENES[0];
+    const boardroom = scene.rooms.find((r) => r.label === "Boardroom");
     const convo = this.conversations.find((c) => this.agents[c.from] && this.agents[c.to]);
     if (convo) {
       const from = this.agents[convo.from], to = this.agents[convo.to];
-      from.role = "approach"; from.partner = to.id; from.pendingSpeech = convo.body || "…";
-      from.activity = null; to.role = "listen";
+      from.role = "meeting"; from.partner = to.id; from.pendingSpeech = convo.body || "…";
+      from.activity = null;
+      to.role = "meeting"; to.partner = from.id; to.pendingSpeech = "";
+      to.activity = null;
+      if (boardroom?.meetingSpots) {
+        from.meetingSpot = boardroom.meetingSpots[0];
+        to.meetingSpot = boardroom.meetingSpots[1];
+      }
     }
   },
 
-  desiredDest(a) {
-    if (a.role === "approach" && this.agents[a.partner]) {
-      const p = this.agents[a.partner];
-      const dx = p.x > a.x ? -30 : 30;
-      return { x: p.x + dx, y: p.y, key: `talk:${a.partner}` };
+  _roomFromTask(agentId, task) {
+    const desc = [task.title, task.name, task.description, task.body].filter(Boolean).join(" ").toLowerCase();
+    for (const [room, keywords] of Object.entries(TASK_ROOM_KEYWORDS)) {
+      if (keywords.some((kw) => desc.includes(kw))) return room;
     }
+    return ROLE_HOME_ROOM[agentId] || "Ops Bullpen";
+  },
+
+  desiredDest(a) {
+    // Meeting → walk to assigned seat in Boardroom.
+    if (a.role === "meeting" && a.meetingSpot) {
+      return { x: a.meetingSpot.x, y: a.meetingSpot.y, key: `meet:${a.id}` };
+    }
+    // Amenity visit (break / gym etc.).
     if (a.activity) return { x: a.activity.x, y: a.activity.y, key: `act:${a.activity.name}` };
+    // Task-driven room routing.
+    if (a.targetRoom) {
+      const scene = SCENES[0];
+      const room = scene.rooms.find((r) => r.label === a.targetRoom);
+      if (room?.standSpot) return { x: room.standSpot.x, y: room.standSpot.y, key: `room:${a.targetRoom}` };
+    }
+    // Default: employee's desk.
     return { x: a.home.standX, y: a.home.standY, key: "home" };
   },
 
@@ -687,8 +755,8 @@ const Office = {
     for (const id of this.order) {
       const a = this.agents[id];
 
-      // Idle wander scheduling (only when truly idle).
-      if (a.role === "home" && !a.activity && (!a.path || !a.path.length)) {
+      // Idle wander scheduling — only when truly idle (no task, no meeting).
+      if (a.role === "home" && !a.activity && !a.targetRoom && (!a.path || !a.path.length)) {
         a.wanderT -= dt;
         if (a.wanderT <= 0) {
           a.wanderT = 14 + Math.random() * 18;
@@ -722,7 +790,7 @@ const Office = {
         }
       }
       const arrived = !a.path || !a.path.length;
-      if (arrived && a.state === "walking") a.state = a.role === "approach" || a.activity ? "busy" : "idle";
+      if (arrived && a.state === "walking") a.state = a.role === "meeting" || a.role === "approach" || a.activity ? "busy" : "idle";
 
       // Activity countdown once arrived.
       if (a.activity) {
@@ -733,8 +801,10 @@ const Office = {
         }
       }
 
-      // Listener faces speaker.
-      if (a.role === "listen" && this.agents[a.partner]) a.facing = this.agents[a.partner].x < a.x ? "left" : "right";
+      // Meeting participants face each other when seated.
+      if ((a.role === "meeting" || a.role === "listen") && a.partner && this.agents[a.partner]) {
+        a.facing = this.agents[a.partner].x < a.x ? "left" : "right";
+      }
 
       a.idleBob = Math.sin(performance.now() / 360 + this.order.indexOf(id)) > 0.6 ? -1 : 0;
       a.blinkT -= dt;
@@ -743,8 +813,9 @@ const Office = {
       // Speech / thought.
       if (a.activity && a.atActivity && arrived) { a.speech = a.activity.emote; a.thought = ""; }
       else if (a.activity) { a.speech = ""; a.thought = "…"; }
-      else if (a.role === "approach") { a.speech = arrived ? a.pendingSpeech : ""; a.thought = arrived ? "" : "…"; }
+      else if (a.role === "meeting") { a.speech = arrived ? a.pendingSpeech : ""; a.thought = arrived ? "" : "…"; }
       else if (a.role === "listen") { a.speech = ""; a.thought = ""; }
+      else if (a.targetRoom) { a.speech = ""; a.thought = arrived ? "" : "…"; }
       else { a.speech = this.ambient?.[id]?.speech || ""; a.thought = this.ambient?.[id]?.thought || ""; }
     }
   },
