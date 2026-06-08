@@ -18,6 +18,12 @@ if [ -n "$DISCORD_BOT_TOKEN" ]; then
   openclaw config set channels.discord.enabled true --strict-json || true
 fi
 
+# Open the guild policy so server slash commands are allowed. Without this,
+# groupPolicy defaults to "allowlist" which blocks all guild commands unless
+# each guild is explicitly added to the config — before even reaching the
+# commands.ownerAllowFrom check.
+openclaw config set channels.discord.groupPolicy '"open"' --strict-json || true
+
 # applicationId must be a quoted JSON string (not a bare number).
 if [ -n "$DISCORD_APPLICATION_ID" ]; then
   openclaw config set channels.discord.accounts.default.applicationId "\"$DISCORD_APPLICATION_ID\"" || true
