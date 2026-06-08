@@ -1,6 +1,28 @@
 #!/bin/sh
 set -e
 
+# ── Persistent data directory ──────────────────────────────────────────────────
+mkdir -p /app/data
+
+# Seed the org with Claw as the sole founding employee on first deploy.
+# Subsequent deploys leave the file alone so Claw's hires/fires persist.
+if [ ! -f /app/data/businessclaw-org.json ]; then
+  cat > /app/data/businessclaw-org.json << 'ORGJSON'
+{
+  "employees": [
+    {
+      "id": "claw",
+      "name": "Claw",
+      "role": "Chief Executive",
+      "status": "active",
+      "theme": "executive",
+      "emoji": "🧠"
+    }
+  ]
+}
+ORGJSON
+fi
+
 # ── Model provider ─────────────────────────────────────────────────────────────
 # OPENROUTER_API_KEY is read from the environment by OpenClaw automatically.
 # Write the model directly to config — openclaw models set mangles the slug
@@ -35,7 +57,16 @@ fi
 # No systemd in Docker — run the gateway as a plain foreground process.
 openclaw gateway &
 
-sleep 3
+sleep 5
+
+# ── Autonomous work cycle ──────────────────────────────────────────────────────
+# Add a cron job so Claw works proactively without waiting for Discord messages.
+# The flag file prevents duplicate jobs on every redeployment.
+if [ ! -f /app/data/.cron-initialized ]; then
+  openclaw cron add --agent claw --every 1h --description "work-cycle" \
+    "Execute your standing orders: check active tasks and owner messages, advance the highest-value task, and report what changed." || true
+  touch /app/data/.cron-initialized
+fi
 
 # ── Dashboard ──────────────────────────────────────────────────────────────────
 export HOST="0.0.0.0"

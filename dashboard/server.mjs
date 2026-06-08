@@ -18,6 +18,7 @@ const discordRoutingPath = process.env.BUSINESSCLAW_DISCORD_ROUTING_PATH || path
 const queuePath = process.env.BUSINESSCLAW_QUEUE_PATH || path.join(root, "data", "businessclaw-queue.json");
 const auditPath = process.env.BUSINESSCLAW_AUDIT_PATH || path.join(root, "data", "audit.log");
 const logPath = path.join(root, "data", "dashboard.log");
+const gatewayLogDir = process.env.OPENCLAW_LOG_DIR || "/tmp/openclaw";
 const openclawBin =
   process.env.OPENCLAW_BIN ||
   (process.platform === "win32"
@@ -283,6 +284,39 @@ async function readAuditTail() {
   }
 }
 
+async function readGatewayActivity() {
+  try {
+    const today = new Date().toISOString().slice(0, 10);
+    const logFile = path.join(gatewayLogDir, `openclaw-${today}.log`);
+    const text = await fs.readFile(logFile, "utf8");
+    const lines = text.trim().split(/\r?\n/).filter(Boolean);
+    const entries = [];
+    for (const raw of lines.slice(-300)) {
+      try {
+        const obj = JSON.parse(raw);
+        const msg = String(obj.message || obj["0"] || "").trim();
+        const level = obj._meta?.logLevelName || "INFO";
+        const time = obj.time || obj._meta?.date || null;
+        if (!msg) continue;
+        // Only surface agent/model/discord/ws activity — skip config and startup noise
+        const lower = msg.toLowerCase();
+        const isAgentActivity = lower.includes("[agent") || lower.includes("[ws]") || lower.includes("[discord]") || lower.includes("[heartbeat]") || lower.includes("[cron]");
+        const isModelActivity = lower.includes("model") && (lower.includes("token") || lower.includes("→") || lower.includes("⇄") || lower.includes("call"));
+        const isError = level === "ERROR" || level === "WARN";
+        if (!isAgentActivity && !isModelActivity && !isError) continue;
+        // Try to extract a sender tag like [agent/claw] → "claw"
+        const senderMatch = msg.match(/\[agents?\/([^\]]+)\]/);
+        const sender = senderMatch ? senderMatch[1] : (msg.includes("[discord]") ? "discord" : msg.includes("[ws]") ? "ws" : msg.includes("[heartbeat]") || msg.includes("[cron]") ? "scheduler" : "gateway");
+        entries.push({ time, level, message: msg, sender });
+      } catch { /* skip malformed lines */ }
+    }
+    // Return last 40 relevant entries, newest first
+    return entries.slice(-40).reverse();
+  } catch {
+    return [];
+  }
+}
+
 function parseAuditLine(line) {
   try {
     return JSON.parse(line);
@@ -451,7 +485,7 @@ async function buildState() {
   const status = openclawCache.status;
   const agents = openclawCache.agents;
   const tasks = openclawCache.tasks;
-  const [ledger, org, revenue, wallet, board, discordRouting, queue, auditTrail] = await Promise.all([
+  const [ledger, org, revenue, wallet, board, discordRouting, queue, auditTrail, activity] = await Promise.all([
     readLedger(),
     readOrg(),
     readRevenue(),
@@ -460,6 +494,7 @@ async function buildState() {
     readDiscordRouting(),
     readQueue(),
     readAuditTail(),
+    readGatewayActivity(),
   ]);
 
   const fileCabinet = buildFileCabinet({ ledger, org, revenue, wallet, board, discordRouting, auditTrail });
@@ -480,6 +515,7 @@ async function buildState() {
     queue: queueSummary,
     fileCabinet,
     boardMessages,
+    activity,
     dashboard: {
       mode: "display-only",
       theme: "pixel-office",

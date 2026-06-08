@@ -4,7 +4,7 @@ const agentColor = { claw: "#3f6fb0", ledger: "#3f9d6b", forge: "#c25a44" };
 let popoutId = null;
 
 let latestState = null;
-const panelOrder = ["office", "analytics", "bank", "tasks", "queue", "experiments", "cabinet"];
+const panelOrder = ["office", "analytics", "bank", "tasks", "queue", "experiments", "cabinet", "activity"];
 let selectedPanel = "office";
 let autoRotate = true;
 
@@ -45,7 +45,7 @@ function render(state) {
   const ambient = computeAmbient({ tasks, ledger, org, revenue, wallet, queue });
   window.Office.setState({ ...state, __ambient: ambient });
 
-  renderSelectedPanel({ agents, tasks, ledger, org, revenue, wallet, board: state.board || {}, discordRouting: state.discordRouting || {}, queue, gateway: state.gateway });
+  renderSelectedPanel({ agents, tasks, ledger, org, revenue, wallet, board: state.board || {}, discordRouting: state.discordRouting || {}, queue, gateway: state.gateway, activity: state.activity || [] });
   if (popoutId) fillPopout(popoutId); // keep an open pop-out fresh
 }
 
@@ -118,6 +118,7 @@ function panelMap(data) {
     queue: queuePanel(data),
     experiments: experimentsPanel(data),
     cabinet: cabinetPanel({ ...data, fileCabinet: latestState?.fileCabinet || [] }),
+    activity: activityPanel({ activity: data.activity || latestState?.activity || [] }),
   };
 }
 
@@ -230,6 +231,23 @@ function cabinetPanel({ fileCabinet }) {
     return `<p><strong>${escapeHtml(record.cabinet || "Record")}: ${escapeHtml(record.title || "")}</strong><br>${escapeHtml(at)}<br>${escapeHtml(record.detail || "")}</p>`;
   });
   return { title: "File Cabinet", body: rows.join("") || "<p>No records filed yet.</p>" };
+}
+
+function activityPanel({ activity }) {
+  const levelColor = { ERROR: "#c25a44", WARN: "#b8860b", INFO: "#3f6fb0" };
+  const senderColor = { claw: "#3f6fb0", ledger: "#3f9d6b", forge: "#c25a44", discord: "#7289da", ws: "#8a6442", scheduler: "#5a5a8a", gateway: "#5a7a5a" };
+  const rows = (activity || []).slice(0, 20).map((entry) => {
+    const timeStr = entry.time ? new Date(entry.time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }) : "??:??:??";
+    const color = senderColor[entry.sender] || "#8a6442";
+    const lvlColor = levelColor[entry.level] || levelColor.INFO;
+    const tag = `<span style="color:${color};font-weight:bold">[${escapeHtml(entry.sender || "?")}]</span>`;
+    const lvl = entry.level && entry.level !== "INFO" ? ` <span style="color:${lvlColor}">${escapeHtml(entry.level)}</span>` : "";
+    return `<p><small style="opacity:0.7">${escapeHtml(timeStr)}</small>${lvl} ${tag}<br>${escapeHtml(truncate(entry.message, 80))}</p>`;
+  });
+  return {
+    title: "Gateway Activity",
+    body: rows.join("") || "<p>No activity yet. Gateway log entries will appear here once the OpenClaw runtime is running.</p>",
+  };
 }
 
 // ---- employee pop-out card ----
@@ -357,6 +375,7 @@ function viewData() {
     discordRouting: latestState.discordRouting || {},
     queue: latestState.queue || {},
     gateway: latestState.gateway,
+    activity: latestState.activity || [],
   };
 }
 
