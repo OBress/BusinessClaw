@@ -53,16 +53,16 @@ if [ -n "$DISCORD_OWNER_ID" ]; then
   openclaw config set commands.ownerAllowFrom "[\"$DISCORD_OWNER_ID\"]" --strict-json || true
 fi
 
+# ── Memory search ─────────────────────────────────────────────────────────────
+# Disable before the gateway starts so the setting is live on first boot.
+# No OpenAI key available; builtin backend hardcodes OpenAI as embedding provider.
+openclaw config set agents.defaults.memorySearch.enabled false --strict-json || true
+
 # ── OpenClaw gateway ───────────────────────────────────────────────────────────
 # No systemd in Docker — run the gateway as a plain foreground process.
 openclaw gateway &
 
 sleep 5
-
-# ── Memory search ─────────────────────────────────────────────────────────────
-# Disable vector memory search — no OpenAI key available, and the builtin
-# backend hardcodes OpenAI as the embedding provider.
-openclaw config set agents.defaults.memorySearch.enabled false --strict-json || true
 
 # ── Autonomous work cycle ──────────────────────────────────────────────────────
 # Add a cron job so Claw works proactively without waiting for Discord messages.
