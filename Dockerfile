@@ -20,10 +20,6 @@ RUN BUSINESSCLAW_ROOT=/app bash /app/scripts/bootstrap-vps.sh
 RUN mkdir -p /app/data && \
     chmod +x /app/scripts/start-production.sh
 
-# Declare the data directory as a volume — Railway mounts a persistent
-# disk here so businessclaw-*.json files survive redeployments.
-VOLUME ["/app/data"]
-
 # Railway injects $PORT at runtime; forwarded via the startup script
 EXPOSE 4177
 
