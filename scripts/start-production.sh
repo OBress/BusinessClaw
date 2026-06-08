@@ -4,6 +4,16 @@ set -e
 # ── Persistent data directory ──────────────────────────────────────────────────
 mkdir -p /app/data
 
+# ── Persist OpenClaw agent memory across redeploys ────────────────────────────
+# /root/.openclaw/agents/ holds Claw's memory, sessions, and auth profiles.
+# Without this symlink it resets to empty on every container restart.
+# The config file is intentionally NOT symlinked — we rewrite it each deploy.
+mkdir -p /app/data/.openclaw-agents
+if [ -d /root/.openclaw/agents ] && [ ! -L /root/.openclaw/agents ]; then
+  rm -rf /root/.openclaw/agents
+fi
+ln -sfn /app/data/.openclaw-agents /root/.openclaw/agents
+
 # Seed the org with Claw as the sole founding employee on first deploy.
 # Subsequent deploys leave the file alone so Claw's hires/fires persist.
 if [ ! -f /app/data/businessclaw-org.json ]; then
