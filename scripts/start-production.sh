@@ -37,6 +37,25 @@ fi
 # Runs locally so no public instance can block us with 403s.
 export SEARXNG_SETTINGS_PATH=/app/scripts/searxng-settings.yml
 export PYTHONPATH=/searxng
+
+# Patch SearXNG's get_real_ip() to fall back to request.remote_addr when no
+# proxy headers are set. Without this, local calls from OpenClaw (no
+# X-Forwarded-For) return None and bot detection always blocks them with 403.
+python3 -c "
+fp = '/searxng/searx/botdetection/__init__.py'
+try:
+    txt = open(fp).read()
+    old = '    logger.error(\"X-Forwarded-For nor X-Real-IP header is set!\")\n    return None'
+    new = '    return request.remote_addr  # local sidecar: fall back to connection IP'
+    if old in txt:
+        open(fp, 'w').write(txt.replace(old, new))
+        print('SearXNG botdetection patched for local use')
+    else:
+        print('botdetection already patched or structure changed')
+except Exception as e:
+    print('patch skipped:', e)
+" 2>&1 | tee -a /app/data/searxng.log
+
 python3 /searxng/searx/webapp.py >> /app/data/searxng.log 2>&1 &
 
 # ── Model provider ─────────────────────────────────────────────────────────────

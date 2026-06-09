@@ -1,16 +1,8 @@
-# SearXNG bot-detection config for local sidecar use.
-# OpenClaw calls SearXNG directly (127.0.0.1) with no proxy headers,
-# so we must use the raw connection IP instead of X-Forwarded-For.
-
-[real_ip]
-# 0 = use request.remote_addr directly; no X-Forwarded-For required
-x_for = 0
-ipv4_prefix = 32
-ipv6_prefix = 128
-
-[botdetection.ip_limit]
-filter_on_accept = false
-filter_on_search = false
+# SearXNG limiter config for local sidecar use.
+# Minimal valid schema — only whitelists local IPs.
+# The startup script patches get_real_ip() to fall back to remote_addr
+# so 127.0.0.1 is actually detectable and matched against pass_ip.
 
 [botdetection.ip_lists]
 pass_ip = ["127.0.0.1/32", "::1/128"]
+block_ip = []
