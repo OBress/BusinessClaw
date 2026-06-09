@@ -547,14 +547,14 @@ body {
 }
 
 /* Desktop: "Office" nav tab is redundant (office is always visible) */
-@media (min-width: 769px) {
+@media (min-width: 601px) {
   .display-menu button[data-panel="office"] {
     display: none;
   }
 }
 
 /* ── Mobile: tab-bar at top, canvas fills remaining height ───────────── */
-@media (max-width: 768px) {
+@media (max-width: 600px) {
   body {
     overflow: hidden;
   }

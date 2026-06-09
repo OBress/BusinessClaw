@@ -313,7 +313,7 @@ function fillPopout(id) {
   el.querySelector(".pop-close").addEventListener("click", hidePopout);
 }
 
-const isMobile = () => window.matchMedia("(max-width: 768px)").matches;
+const isMobile = () => window.matchMedia("(max-width: 600px)").matches;
 
 function showPopout(id, pos) {
   popoutId = id;

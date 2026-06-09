@@ -33,6 +33,11 @@ if [ ! -f /app/data/businessclaw-org.json ]; then
 ORGJSON
 fi
 
+# ── SearXNG web search sidecar ─────────────────────────────────────────────────
+# Runs locally so no public instance can block us with 403s.
+export SEARXNG_SETTINGS_PATH=/app/scripts/searxng-settings.yml
+python3 /searxng/searx/webapp.py >> /app/data/searxng.log 2>&1 &
+
 # ── Model provider ─────────────────────────────────────────────────────────────
 # OPENROUTER_API_KEY is read from the environment by OpenClaw automatically.
 # Write the model directly to config — openclaw models set mangles the slug
@@ -82,9 +87,9 @@ openclaw config set tools.deny '["nodes","gateway"]' --strict-json || true
 
 # ── Web search ─────────────────────────────────────────────────────────────────
 # SearXNG plugin is bundled but disabled by default — enable it, then set URL.
-# searx.be returns 403 for automated requests; paulgo.io is more permissive.
+# SearXNG runs as a local sidecar on port 8888 — no public instance, no 403s.
 openclaw config set plugins.entries.searxng.enabled true --strict-json || true
-openclaw config set plugins.entries.searxng.config.webSearch.baseUrl '"https://paulgo.io"' --strict-json || true
+openclaw config set plugins.entries.searxng.config.webSearch.baseUrl '"http://127.0.0.1:8888"' --strict-json || true
 
 # ── Subagent configuration ─────────────────────────────────────────────────────
 # sessions_spawn fails with per-call runTimeoutSeconds — must be set globally.

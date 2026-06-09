@@ -1,0 +1,13 @@
+use_default_settings: true
+
+server:
+  secret_key: "businessclaw-searxng-3a9b2c7d8e1f4a5b6c0d"
+  bind_address: "127.0.0.1"
+  port: 8888
+  limiter: false
+  image_proxy: false
+
+search:
+  safe_search: 0
+  autocomplete: ""
+  default_lang: "en"
