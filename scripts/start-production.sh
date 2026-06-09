@@ -135,14 +135,16 @@ openclaw device pair 2>/dev/null || true
 
 # ── Autonomous work cycle ──────────────────────────────────────────────────────
 # Add a cron job so Claw works proactively without waiting for Discord messages.
-# v2 flag: v1 was created even though cron add failed (wrong syntax), so use a
-# new name so this block actually runs on the next deploy.
+# v3 flag: adds --timeout-seconds 600 so turns don't time out mid-task.
+# (v2 created the cron at 30s default; Claw must edit the other crons herself
+#  via her own cron tools — CLI device-pair blocks external edits.)
 # The && ensures the flag is only written on success — retries on future deploys
 # if the gateway isn't up yet.
-if [ ! -f /app/data/.cron-v2-initialized ]; then
-  openclaw cron add work-cycle --every 1h --agent claw \
+if [ ! -f /app/data/.cron-v3-initialized ]; then
+  openclaw cron delete work-cycle 2>/dev/null || true
+  openclaw cron add work-cycle --every 1h --agent claw --timeout-seconds 600 \
     --message "Execute your standing orders: check active tasks and owner messages, advance the highest-value task, and report what changed." && \
-  touch /app/data/.cron-v2-initialized || true
+  touch /app/data/.cron-v3-initialized || true
 fi
 
 # ── Dashboard ──────────────────────────────────────────────────────────────────
