@@ -36,6 +36,7 @@ fi
 # ── SearXNG web search sidecar ─────────────────────────────────────────────────
 # Runs locally so no public instance can block us with 403s.
 export SEARXNG_SETTINGS_PATH=/app/scripts/searxng-settings.yml
+export PYTHONPATH=/searxng
 python3 /searxng/searx/webapp.py >> /app/data/searxng.log 2>&1 &
 
 # ── Model provider ─────────────────────────────────────────────────────────────
