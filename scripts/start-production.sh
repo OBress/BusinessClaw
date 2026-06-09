@@ -82,14 +82,31 @@ openclaw config set tools.deny '["nodes","gateway"]' --strict-json || true
 
 # ── Web search ─────────────────────────────────────────────────────────────────
 # SearXNG plugin is bundled but disabled by default — enable it, then set URL.
+# searx.be returns 403 for automated requests; paulgo.io is more permissive.
 openclaw config set plugins.entries.searxng.enabled true --strict-json || true
-openclaw config set plugins.entries.searxng.config.webSearch.baseUrl '"https://searx.be"' --strict-json || true
+openclaw config set plugins.entries.searxng.config.webSearch.baseUrl '"https://paulgo.io"' --strict-json || true
+
+# ── Subagent configuration ─────────────────────────────────────────────────────
+# sessions_spawn fails with per-call runTimeoutSeconds — must be set globally.
+# Without this Claw cannot spawn Scout/Forge as subagents with timed tasks.
+openclaw config set agents.defaults.subagents.runTimeoutSeconds 300 --strict-json || true
 
 # ── OpenClaw gateway ───────────────────────────────────────────────────────────
 # No systemd in Docker — run the gateway as a plain foreground process.
 openclaw gateway &
 
 sleep 5
+
+# ── Device pairing ─────────────────────────────────────────────────────────
+# openclaw gateway install (systemd) normally registers the local device key
+# with the gateway so CLI processes can authenticate. That step fails silently
+# in Docker (no systemd), leaving CLI→gateway WS connections rejected with
+# "device identity required".
+# Try known pairing commands non-interactively; ignore all failures.
+openclaw pair --yes 2>/dev/null || \
+openclaw pair   2>/dev/null || \
+openclaw auth pair 2>/dev/null || \
+openclaw device pair 2>/dev/null || true
 
 # ── Autonomous work cycle ──────────────────────────────────────────────────────
 # Add a cron job so Claw works proactively without waiting for Discord messages.

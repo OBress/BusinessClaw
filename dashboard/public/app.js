@@ -4,7 +4,8 @@ const agentColor = { claw: "#3f6fb0", ledger: "#3f9d6b", forge: "#c25a44" };
 let popoutId = null;
 
 let latestState = null;
-const panelOrder = ["office", "analytics", "bank", "tasks", "queue", "experiments", "cabinet", "activity"];
+// "office" excluded — it maps to the canvas, not a panel rotation target
+const panelOrder = ["analytics", "bank", "tasks", "queue", "experiments", "cabinet", "activity"];
 let selectedPanel = "office";
 let autoRotate = true;
 
@@ -92,7 +93,7 @@ function computeAmbient({ tasks, ledger, org, revenue, wallet, queue }) {
   const history = (org.history || []).at(-1);
   const activeEmployees = (org.employees || []).filter((e) => e.status === "active");
   const queueDue = queue.due || 0;
-  return {
+  const named = {
     claw: {
       speech: task ? `On it: ${truncate(task, 30)}` : "Checking the roadmap.",
       thought: queueDue ? `${queueDue} in the queue` : experiments[0]?.nextAction || "Where's the next dollar?",
@@ -106,6 +107,16 @@ function computeAmbient({ tasks, ledger, org, revenue, wallet, queue }) {
       thought: activeEmployees.length > 3 ? "New teammate!" : "What to automate next?",
     },
   };
+  // Any employee not in the explicit map gets generic ambient chatter.
+  for (const emp of activeEmployees) {
+    if (!named[emp.id]) {
+      named[emp.id] = {
+        speech: `Working on ${truncate(emp.role || "tasks", 26)}.`,
+        thought: experiments[0] ? `Eye on: ${truncate(experiments[0].name || "experiment", 20)}` : "Finding opportunities.",
+      };
+    }
+  }
+  return named;
 }
 
 // ---- panels ----
@@ -127,9 +138,21 @@ function renderSelectedPanel(data) {
   const panel = panels[selectedPanel] || panels.office;
   $("rotating-title").textContent = panel.title;
   $("rotating-body").innerHTML = panel.body;
-  document.querySelectorAll(".display-menu button").forEach((item) =>
+  // Sync active state on both desktop nav and mobile top tabs
+  document.querySelectorAll(".display-menu button, .mobile-tab").forEach((item) =>
     item.classList.toggle("active", item.dataset.panel === selectedPanel),
   );
+  updateMobileView();
+}
+
+// Show/hide canvas vs panel based on selectedPanel (mobile only).
+function updateMobileView() {
+  if (!isMobile()) return;
+  const stageWrap = document.querySelector(".stage-wrap");
+  const panelEl = document.querySelector(".panel");
+  const isOffice = selectedPanel === "office";
+  stageWrap?.classList.toggle("mobile-hidden", !isOffice);
+  panelEl?.classList.toggle("mobile-open", !isOffice);
 }
 
 function officePanel({ agents, org, board }) {
@@ -380,13 +403,14 @@ function viewData() {
 }
 
 function installInteractions() {
-  // Side menu (display navigation only — no data entry).
-  document.querySelectorAll(".display-menu button").forEach((button) => {
+  // Desktop side nav + mobile top tabs — share the same handler.
+  document.querySelectorAll(".display-menu button, .mobile-tab").forEach((button) => {
     button.addEventListener("click", () => {
       selectedPanel = button.dataset.panel || "office";
       autoRotate = false;
-      $("scene-hint").textContent = "Click an employee to view their profile.";
+      $("scene-hint").textContent = "Drag to pan · pinch to zoom · tap an employee";
       if (latestState) renderSelectedPanel(viewData());
+      else updateMobileView(); // ensure canvas/panel visibility even before first fetch
     });
   });
 
@@ -409,18 +433,24 @@ function installInteractions() {
   window.Office.onAgentClick((id, pos) => showPopout(id, pos));
   window.Office.onEmptyClick(() => hidePopout());
 
-  // Mobile dashboard toggle.
-  const dashBtn = $("mobile-dash-btn");
-  const closeBtn = $("mobile-close-btn");
-  const panelEl = document.querySelector(".panel");
-  if (dashBtn) dashBtn.addEventListener("click", () => { panelEl.classList.add("mobile-open"); autoRotate = false; });
-  if (closeBtn) closeBtn.addEventListener("click", () => panelEl.classList.remove("mobile-open"));
+  // Tapping the canvas area while a mobile panel is open → return to office.
+  document.getElementById("stage")?.addEventListener("touchstart", () => {
+    if (isMobile() && selectedPanel !== "office") {
+      selectedPanel = "office";
+      updateMobileView();
+      document.querySelectorAll(".mobile-tab").forEach((b) =>
+        b.classList.toggle("active", b.dataset.panel === "office"),
+      );
+    }
+  }, { passive: true });
 }
 
-// Auto-tour panels when idle.
+// Auto-tour panels when idle (desktop only — don't rotate while mobile canvas is showing).
 setInterval(() => {
   if (!autoRotate || !latestState) return;
-  const nextIndex = (panelOrder.indexOf(selectedPanel) + 1) % panelOrder.length;
+  if (isMobile() && selectedPanel === "office") return;
+  const idx = panelOrder.indexOf(selectedPanel);
+  const nextIndex = (idx < 0 ? 0 : idx + 1) % panelOrder.length;
   selectedPanel = panelOrder[nextIndex];
   renderSelectedPanel(viewData());
 }, 7000);

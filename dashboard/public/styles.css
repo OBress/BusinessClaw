@@ -521,21 +521,48 @@ body {
   50% { opacity: 0.4; }
 }
 
-/* Desktop: hide mobile-only controls */
-.mobile-dash-btn,
-.mobile-close-btn {
+/* Mobile top nav: hidden on desktop */
+.mobile-topnav {
   display: none;
 }
 
-/* ── Mobile: full-screen game with overlay panels ────────────────────── */
+.mobile-tab {
+  font-family: var(--retro);
+  font-size: 17px;
+  padding: 5px 13px;
+  color: #e8d8b0;
+  background: rgba(44, 30, 16, 0.72);
+  border: 2px solid rgba(90, 63, 40, 0.55);
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.12s ease;
+  flex: none;
+}
+
+.mobile-tab.active {
+  background: var(--accent);
+  color: #2b2012;
+  border-color: #8a6c20;
+}
+
+/* Desktop: "Office" nav tab is redundant (office is always visible) */
+@media (min-width: 769px) {
+  .display-menu button[data-panel="office"] {
+    display: none;
+  }
+}
+
+/* ── Mobile: tab-bar at top, canvas fills remaining height ───────────── */
 @media (max-width: 768px) {
   body {
     overflow: hidden;
   }
 
+  /* Shell: vertical flex — top nav then canvas / panel */
   .shell {
-    display: block;
-    position: relative;
+    display: flex;
+    flex-direction: column;
     width: 100%;
     height: 100vh;
     height: 100dvh;
@@ -543,10 +570,41 @@ body {
     gap: 0;
   }
 
-  /* Stage fills the whole viewport */
+  /* Top nav bar */
+  .mobile-topnav {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 10px;
+    flex: none;
+    background: rgba(16, 20, 32, 0.96);
+    border-bottom: 2px solid var(--wood-dark);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    z-index: 20;
+    touch-action: pan-x;
+  }
+
+  .mobile-topnav::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Stage: fills all remaining height when active */
   .stage-wrap {
-    position: absolute;
-    inset: 0;
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    align-items: stretch;
+    justify-content: stretch;
+  }
+
+  .stage-wrap.mobile-hidden {
+    display: none;
   }
 
   .stage-frame {
@@ -588,50 +646,27 @@ body {
     -webkit-backdrop-filter: blur(4px);
   }
 
-  /* Zoom controls stay top-right, shifted down clear of floor pills */
+  /* Zoom controls stay top-right */
   .zoom-controls {
     top: 56px;
   }
 
   .scene-hint {
-    font-size: 14px;
+    font-size: 13px;
     bottom: 6px;
     left: 6px;
   }
 
-  /* Board mic shifts up to clear the dashboard button */
   .board-mic {
-    bottom: 74px;
+    bottom: 14px;
     right: 16px;
   }
 
-  /* Dashboard open button — bottom right */
-  .mobile-dash-btn {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    position: absolute;
-    bottom: 20px;
-    right: 14px;
-    z-index: 15;
-    font-family: var(--retro);
-    font-size: 19px;
-    padding: 8px 18px;
-    color: #f3e6c6;
-    background: rgba(44, 30, 16, 0.88);
-    border: 2px solid var(--accent);
-    border-radius: 10px;
-    cursor: pointer;
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
-  }
-
-  /* Panel: full-screen slide-up overlay */
+  /* Panel: fills remaining height, hidden until a non-office tab is active */
   .panel {
-    position: fixed;
-    inset: 0;
-    z-index: 30;
+    position: relative;
+    flex: 1;
+    min-height: 0;
     overflow-y: auto;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
@@ -640,38 +675,28 @@ body {
     box-shadow: none;
     padding: 14px 16px;
     gap: 10px;
-    transform: translateY(100%);
-    transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+    /* override desktop slide-up: just show/hide */
+    transform: none;
+    transition: none;
+    display: none;
   }
 
   .panel.mobile-open {
-    transform: translateY(0);
-  }
-
-  /* Back button — top of the overlay panel */
-  .mobile-close-btn {
     display: flex;
-    align-items: center;
-    gap: 6px;
-    font-family: var(--retro);
-    font-size: 18px;
-    padding: 7px 16px;
-    color: var(--ink);
-    background: #e7cf9c;
-    border: 2px solid var(--wood);
-    border-radius: 8px;
-    cursor: pointer;
-    align-self: flex-start;
-    flex-shrink: 0;
   }
 
-  /* Feed card: fixed scroll zone inside the panel */
+  /* Panel nav is redundant on mobile — top bar handles switching */
+  .panel .display-menu {
+    display: none;
+  }
+
+  /* Feed card: explicit height so it scrolls */
   .display-card {
     flex: none;
     height: 260px;
   }
 
-  /* Employee card: bottom sheet instead of floating popout */
+  /* Employee card: bottom sheet */
   .employee-popout {
     position: fixed;
     left: 0;
@@ -686,7 +711,6 @@ body {
     box-shadow: 0 -8px 36px rgba(0, 0, 0, 0.5);
   }
 
-  /* Hide the downward tail arrow — doesn't make sense for a bottom sheet */
   .employee-popout::after {
     display: none;
   }

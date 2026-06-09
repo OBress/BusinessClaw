@@ -14,6 +14,18 @@
   </head>
   <body>
     <main class="shell">
+      <!-- Mobile-only top nav: replaces the old "Dashboard ▲" bottom button -->
+      <nav class="mobile-topnav" id="mobile-topnav" aria-label="View selector">
+        <button class="mobile-tab active" type="button" data-panel="office">Office</button>
+        <button class="mobile-tab" type="button" data-panel="analytics">Analytics</button>
+        <button class="mobile-tab" type="button" data-panel="bank">Bank</button>
+        <button class="mobile-tab" type="button" data-panel="tasks">Tasks</button>
+        <button class="mobile-tab" type="button" data-panel="queue">Queue</button>
+        <button class="mobile-tab" type="button" data-panel="experiments">Experiments</button>
+        <button class="mobile-tab" type="button" data-panel="cabinet">Cabinet</button>
+        <button class="mobile-tab" type="button" data-panel="activity">Activity</button>
+      </nav>
+
       <section class="stage-wrap" aria-label="BusinessClaw pixel office">
         <div class="stage-frame">
           <div class="floor-strip" role="group" aria-label="Office floors">
@@ -38,13 +50,10 @@
             <span class="mic-stand"></span>
             <span class="mic-note" id="mic-note">quiet</span>
           </div>
-
-          <button type="button" class="mobile-dash-btn" id="mobile-dash-btn" aria-label="Open dashboard">Dashboard ▲</button>
         </div>
       </section>
 
       <aside class="panel" aria-label="BusinessClaw display panels">
-        <button type="button" class="mobile-close-btn" id="mobile-close-btn" aria-label="Back to office">← Office</button>
         <header>
           <p class="kicker">BUSINESSCLAW</p>
           <h1>Company Office</h1>

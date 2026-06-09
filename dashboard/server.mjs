@@ -86,6 +86,12 @@ function runOpenClaw(args) {
 // gateway). We refresh them into a cache on an interval so /api/state always
 // responds instantly from file data + last-known gateway snapshots, instead of
 // blocking the page for seconds on a cold or busy gateway.
+//
+// Each CLI spawn attempts a local gateway WebSocket connection. If that fails
+// (e.g. device not yet paired), the CLI falls back to local files and still
+// exits 0 — so the cache is populated, but the gateway logs a
+// "[ws] closed before connect" noise line. We keep the interval long (3 min)
+// to minimise those log entries while the device-pairing issue is outstanding.
 const openclawCache = {
   status: { ok: false, error: "warming up" },
   agents: { ok: false, error: "warming up" },
@@ -300,6 +306,9 @@ async function readGatewayActivity() {
         if (!msg) continue;
         // Only surface agent/model/discord/ws activity — skip config and startup noise
         const lower = msg.toLowerCase();
+        // Skip benign "device not yet paired" noise — these are dashboard CLI poll
+        // side-effects, not real errors; they don't affect agent operation.
+        if (lower.includes("closed before connect") || lower.includes("device identity required")) continue;
         const isAgentActivity = lower.includes("[agent") || lower.includes("[ws]") || lower.includes("[discord]") || lower.includes("[heartbeat]") || lower.includes("[cron]");
         const isModelActivity = lower.includes("model") && (lower.includes("token") || lower.includes("→") || lower.includes("⇄") || lower.includes("call"));
         const isError = level === "ERROR" || level === "WARN";
@@ -569,5 +578,5 @@ server.listen(port, host, () => {
   // even when the gateway is cold. File-backed business data is always fresh.
   setInterval(() => {
     refreshOpenClawCache().catch(() => {});
-  }, 30000);
+  }, 180000); // 3 min — each poll spawns a CLI process that attempts a gateway WS connect
 });
